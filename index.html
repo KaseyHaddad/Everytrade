@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everytrade</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e14;color:#e8edf5;font-family:'IBM Plex Sans',sans-serif;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.mono{font-family:'IBM Plex Mono',monospace}
+.up{color:#00d48a}.dn{color:#ff4d6a}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#0a0e14}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.13);border-radius:2px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;border-bottom:1px solid rgba(255,255,255,0.07);background:#0f1520;flex-shrink:0;flex-wrap:wrap}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500;letter-spacing:-0.5px}
+.logo span{color:#3b8eea}
+.search{padding:5px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.13);background:#151e2e;color:#e8edf5;font-size:12px;width:200px;outline:none}
+.search:focus{border-color:#3b8eea}
+.nav{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.navbtn{padding:5px 11px;border-radius:4px;border:1px solid transparent;background:transparent;font-size:12px;color:#7a8ba3;cursor:pointer;white-space:nowrap;font-family:'IBM Plex Sans',sans-serif}
+.navbtn:hover{color:#e8edf5;background:#151e2e}
+.navbtn.active{color:#3b8eea;border-color:rgba(255,255,255,0.13);background:rgba(59,142,234,0.12)}
+.portsum{text-align:right;margin-left:auto}
+.portval{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+.porttod{font-size:11px}
+
+/* ticker */
+.ticker{display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.07);background:#0f1520;height:36px;overflow:hidden;flex-shrink:0}
+.ticklabel{padding:0 10px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#00d48a;border-right:1px solid rgba(255,255,255,0.07);height:100%;display:flex;align-items:center;flex-shrink:0;letter-spacing:1px}
+.tickscroll{display:flex;animation:scroll 40s linear infinite;white-space:nowrap}
+.tickscroll:hover{animation-play-state:paused}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tickitem{display:inline-flex;align-items:center;gap:6px;padding:0 18px;border-right:1px solid rgba(255,255,255,0.07);font-size:12px;font-family:'IBM Plex Mono',monospace}
+.ticksym{color:#7a8ba3;font-weight:500}
+
+/* body */
+.body{display:grid;grid-template-columns:1fr 260px;flex:1;overflow:hidden}
+.left{border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;overflow:hidden}
+.panelheader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);background:#0f1520;flex-shrink:0}
+.paneltitle{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:#7a8ba3;font-family:'IBM Plex Mono',monospace}
+.disclaimer{font-size:10px;color:#4a5a70;font-family:'IBM Plex Mono',monospace}
+.panel{display:none;flex-direction:column;height:100%;overflow:hidden}
+.panel.active{display:flex}
+
+/* news */
+.newstabs{display:flex;gap:2px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.07);background:#0f1520;flex-shrink:0;flex-wrap:wrap}
+.newstab{padding:4px 10px;border-radius:4px;border:1px solid transparent;background:transparent;font-size:12px;color:#7a8ba3;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+.newstab:hover{color:#e8edf5;background:#151e2e}
+.newstab.active{color:#3b8eea;border-color:rgba(255,255,255,0.13);background:rgba(59,142,234,0.12)}
+.newsfeed{overflow-y:auto;flex:1}
+.newsitem{display:block;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.07);text-decoration:none;cursor:pointer}
+.newsitem:hover{background:#151e2e}
+.newsitemtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.newstag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px;font-family:'IBM Plex Mono',monospace}
+.tag-general{background:rgba(59,142,234,0.12);color:#3b8eea}
+.tag-crypto{background:rgba(245,166,35,0.12);color:#f5a623}
+.tag-markets{background:rgba(0,212,138,0.12);color:#00d48a}
+.tag-commodities{background:rgba(255,77,106,0.12);color:#ff4d6a}
+.newstime{font-size:11px;color:#4a5a70;font-family:'IBM Plex Mono',monospace}
+.newstitle{font-size:13px;color:#e8edf5;line-height:1.45;margin-bottom:4px}
+.newssource{font-size:11px;color:#4a5a70}
+.loading{padding:12px;display:flex;flex-direction:column;gap:10px}
+.skeleton{height:64px;background:#151e2e;border-radius:4px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* etf */
+.etfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:14px;overflow-y:auto}
+.etfcard{background:#0f1520;border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:12px;cursor:pointer}
+.etfcard:hover{border-color:rgba(255,255,255,0.13)}
+.etftop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.etfsym{font-size:14px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.etfname{font-size:11px;color:#4a5a70}
+.etfcat{font-size:10px;padding:2px 6px;border-radius:3px;background:#151e2e;color:#7a8ba3;border:1px solid rgba(255,255,255,0.13);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.etfprice{font-size:18px;font-weight:500;font-family:'IBM Plex Mono',monospace;margin-bottom:2px}
+.etfexp{font-size:10px;color:#4a5a70;margin-top:4px}
+
+/* crypto */
+.cryptoheader{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.cryptotitle{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:#7a8ba3;font-family:'IBM Plex Mono',monospace}
+.cryptoupdated{font-size:10px;color:#4a5a70;font-family:'IBM Plex Mono',monospace}
+.cryptolist{overflow-y:auto;flex:1}
+.cryptorow{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);cursor:pointer}
+.cryptorow:hover{background:#151e2e}
+.cryptosym{font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.cryptoname{font-size:11px;color:#4a5a70}
+.cryptoprice{font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace;text-align:right}
+.cryptochange{font-size:11px;text-align:right}
+.cryptomcap{font-size:10px;color:#4a5a70;font-family:'IBM Plex Mono',monospace;text-align:right}
+.cryptofooter{padding:8px 14px;border-top:1px solid rgba(255,255,255,0.07);font-size:10px;color:#4a5a70}
+.cryptofooter a{color:#4a5a70;text-decoration:none}
+
+/* ship */
+.shipwrap{overflow-y:auto;flex:1}
+.shipsection{padding:14px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.shipsectiontitle{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:#7a8ba3;font-family:'IBM Plex Mono',monospace;margin-bottom:10px}
+.shipalert{border-radius:6px;padding:10px 12px;margin-bottom:8px;border-left:3px solid}
+.shipalert.high{background:rgba(255,77,106,0.12);border-color:#ff4d6a}
+.shipalert.medium{background:rgba(245,166,35,0.12);border-color:#f5a623}
+.shipalerttitle{font-size:12px;font-weight:500;margin-bottom:4px}
+.shipalertdetail{font-size:12px;color:#7a8ba3;line-height:1.5;margin-bottom:6px}
+.shipalertassets{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.shipassetlabel{font-size:11px;color:#4a5a70}
+.shipassettag{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;background:#151e2e;color:#7a8ba3;border:1px solid rgba(255,255,255,0.13)}
+.shiplegend{display:flex;align-items:center;gap:6px;font-size:11px;color:#7a8ba3;margin-bottom:10px}
+.shipdot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-red{background:#ff4d6a}.dot-green{background:#00d48a}.dot-amber{background:#f5a623}
+.shipvessel{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+.shipvesselleft{display:flex;align-items:center;gap:8px}
+.shipvesselname{font-size:12px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.shipvesselroute{font-size:11px;color:#4a5a70}
+.shipvesselright{text-align:right}
+.shipstatus{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;text-transform:uppercase;display:block;margin-bottom:2px}
+.status-red{background:rgba(255,77,106,0.12);color:#ff4d6a}
+.status-green{background:rgba(0,212,138,0.12);color:#00d48a}
+.status-amber{background:rgba(245,166,35,0.12);color:#f5a623}
+.shipcargo{font-size:10px;color:#4a5a70}
+.shipfooter{padding:10px 14px;font-size:11px;color:#4a5a70;border-top:1px solid rgba(255,255,255,0.07)}
+
+/* portfolio */
+.portmetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07)}
+.metric{background:#0f1520;padding:14px}
+.metriclabel{font-size:11px;color:#7a8ba3;text-transform:uppercase;letter-spacing:0.5px;font-family:'IBM Plex Mono',monospace;margin-bottom:4px}
+.metricval{font-size:20px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.porttable{padding:14px;overflow-y:auto}
+.porttableheader{display:grid;grid-template-columns:1fr auto auto;gap:12px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#4a5a70;font-family:'IBM Plex Mono',monospace;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:4px}
+.portrow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+.portsym{font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.portname{font-size:11px;color:#4a5a70}
+.portvalue{font-size:13px;font-family:'IBM Plex Mono',monospace}
+
+/* right sidebar */
+.right{display:flex;flex-direction:column;overflow-y:auto}
+.sidesection{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sidetitle{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:#4a5a70;font-family:'IBM Plex Mono',monospace;margin-bottom:8px}
+.watchrow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+.watchrow:last-child{border:none}
+.watchsym{font-size:12px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+.watchname{font-size:11px;color:#4a5a70}
+.watchright{text-align:right}
+.watchprice{font-size:12px;font-family:'IBM Plex Mono',monospace}
+.tradetabs{display:flex;gap:6px;margin-bottom:10px}
+.tradetab{flex:1;padding:6px;border-radius:4px;border:1px solid rgba(255,255,255,0.13);background:transparent;font-size:12px;color:#7a8ba3;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+.tradetab.buy{background:rgba(0,212,138,0.12);color:#00d48a;border-color:#00d48a}
+.tradetab.sell{background:rgba(255,77,106,0.12);color:#ff4d6a;border-color:#ff4d6a}
+.tradelabel{display:block;font-size:10px;color:#4a5a70;font-family:'IBM Plex Mono',monospace;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
+.tradeinput{width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.13);background:#151e2e;color:#e8edf5;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;outline:none}
+.tradeinput:focus{border-color:#3b8eea}
+.tradebtn{width:100%;padding:8px;border-radius:4px;border:none;background:#00d48a;color:#000;font-size:12px;font-weight:500;font-family:'IBM Plex Mono',monospace;cursor:pointer;margin-top:2px}
+.tradebtn:hover{opacity:0.85}
+.tradenote{font-size:10px;color:#4a5a70;text-align:center;margin-top:6px}
+.alertrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.07)}
+.alertrow:last-child{border:none}
+.alertlabel{font-size:11px;color:#7a8ba3;font-family:'IBM Plex Mono',monospace}
+.alerton{font-size:11px;color:#00d48a}
+.alertoff{font-size:11px;color:#4a5a70}
+
+@media(max-width:768px){.body{grid-template-columns:1fr}.right{display:none}.portmetrics{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo mono"><span>every</span>trade</div>
+  <input class="search" placeholder="Search ETFs, crypto, stocks..." id="searchInput" oninput="handleSearch(this.value)" />
+  <nav class="nav">
+    <button class="navbtn active" onclick="showPanel('markets',this)">Markets</button>
+    <button class="navbtn" onclick="showPanel('etfs',this)">ETFs</button>
+    <button class="navbtn" onclick="showPanel('crypto',this)">Crypto</button>
+    <button class="navbtn" onclick="showPanel('tracking',this)">Ship tracking</button>
+    <button class="navbtn" onclick="showPanel('portfolio',this)">Portfolio</button>
+  </nav>
+  <div class="portsum">
+    <div class="portval mono">$13,480</div>
+    <div class="porttod up">+$214 today</div>
+  </div>
+</div>
+
+<div class="ticker">
+  <div class="ticklabel">LIVE</div>
+  <div class="tickscroll" id="tickerContent"></div>
+</div>
+
+<div class="body">
+  <div class="left">
+
+    <div id="panel-markets" class="panel active">
+      <div class="panelheader">
+        <span class="paneltitle">Market news</span>
+        <span class="disclaimer">For information only — not financial advice</span>
+      </div>
+      <div class="newstabs">
+        <button class="newstab active" onclick="loadNews('general',this)">All news</button>
+        <button class="newstab" onclick="loadNews('crypto',this)">Crypto</button>
+        <button class="newstab" onclick="loadNews('markets',this)">Markets</button>
+        <button class="newstab" onclick="loadNews('commodities',this)">Commodities</button>
+      </div>
+      <div class="newsfeed" id="newsfeed">
+        <div class="loading"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+    </div>
+
+    <div id="panel-etfs" class="panel">
+      <div class="panelheader">
+        <span class="paneltitle">ETF overview</span>
+        <span class="disclaimer">15-min delayed — not financial advice</span>
+      </div>
+      <div class="etfgrid" id="etfgrid"></div>
+    </div>
+
+    <div id="panel-crypto" class="panel">
+      <div class="panelheader">
+        <span class="paneltitle">Live crypto prices</span>
+        <span class="disclaimer">Updates every 30s — CoinGecko</span>
+      </div>
+      <div class="cryptoheader">
+        <span class="cryptotitle">Prices</span>
+        <span class="cryptoupdated" id="cryptoUpdated">Loading...</span>
+      </div>
+      <div class="cryptolist" id="cryptolist"></div>
+      <div class="cryptofooter">Data: <a href="https://coingecko.com" target="_blank">CoinGecko</a></div>
+    </div>
+
+    <div id="panel-tracking" class="panel">
+      <div class="panelheader">
+        <span class="paneltitle">Ship and commodity tracking</span>
+        <span class="disclaimer">Vessel alerts — MarineTraffic coming soon</span>
+      </div>
+      <div class="shipwrap" id="shipwrap"></div>
+    </div>
+
+    <div id="panel-portfolio" class="panel">
+      <div class="panelheader">
+        <span class="paneltitle">My portfolio</span>
+        <span class="disclaimer">Manual tracking — not connected to broker</span>
+      </div>
+      <div class="portmetrics">
+        <div class="metric"><div class="metriclabel">Total value</div><div class="metricval">$13,480</div></div>
+        <div class="metric"><div class="metriclabel">Today</div><div class="metricval up">+$214</div></div>
+        <div class="metric"><div class="metriclabel">Return</div><div class="metricval up">+28.4%</div></div>
+        <div class="metric"><div class="metriclabel">Positions</div><div class="metricval">6</div></div>
+      </div>
+      <div class="porttable">
+        <div class="porttableheader"><span>Asset</span><span>Value</span><span>Today</span></div>
+        <div id="portrows"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right">
+    <div class="sidesection">
+      <div class="sidetitle">Watchlist</div>
+      <div id="watchlist"></div>
+    </div>
+    <div class="sidesection">
+      <div class="sidetitle">Quick trade</div>
+      <div class="tradetabs">
+        <button class="tradetab buy" id="buyTab" onclick="setTradeMode('buy')">Buy</button>
+        <button class="tradetab" id="sellTab" onclick="setTradeMode('sell')">Sell</button>
+      </div>
+      <label class="tradelabel">Asset</label>
+      <input class="tradeinput" id="tradeAsset" value="BTC" />
+      <label class="tradelabel">Amount (USD)</label>
+      <input class="tradeinput" id="tradeAmt" type="number" value="500" />
+      <label class="tradelabel">Order type</label>
+      <select class="tradeinput">
+        <option>Market order</option>
+        <option>Limit order</option>
+        <option>Stop loss</option>
+      </select>
+      <button class="tradebtn" id="tradeBtn" onclick="placeTrade()">Review order</button>
+      <p class="tradenote">Execution via EasyEquities / VALR coming soon</p>
+    </div>
+    <div class="sidesection">
+      <div class="sidetitle">Price alerts</div>
+      <div class="alertrow"><span class="alertlabel">BTC &gt; $90,000</span><span class="alerton">Active</span></div>
+      <div class="alertrow"><span class="alertlabel">OIL &gt; $85</span><span class="alerton">Active</span></div>
+      <div class="alertrow"><span class="alertlabel">ETH &lt; $1,500</span><span class="alertoff">Off</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var ETFS = [
+  { sym:'SPY',  name:'S&P 500 ETF',      price:538.40, change:0.6,  cat:'Equity',    exp:'0.09%' },
+  { sym:'QQQ',  name:'Nasdaq-100 ETF',   price:441.20, change:0.9,  cat:'Tech',      exp:'0.20%' },
+  { sym:'VOO',  name:'Vanguard S&P 500', price:495.10, change:0.5,  cat:'Equity',    exp:'0.03%' },
+  { sym:'GLD',  name:'Gold ETF',         price:234.80, change:0.3,  cat:'Commodity', exp:'0.40%' },
+  { sym:'USO',  name:'Oil ETF',          price:72.10,  change:-1.1, cat:'Commodity', exp:'0.81%' },
+  { sym:'ARKK', name:'ARK Innovation',   price:54.30,  change:-0.4, cat:'Disruptive',exp:'0.75%' },
+  { sym:'VTI',  name:'Total Market ETF', price:242.60, change:0.4,  cat:'Equity',    exp:'0.03%' },
+  { sym:'XLE',  name:'Energy Select',    price:88.20,  change:-0.9, cat:'Energy',    exp:'0.09%' },
+]
+
+var WATCHLIST = [
+  { sym:'BTC', name:'Bitcoin',     price:84210,  change:2.4  },
+  { sym:'ETH', name:'Ethereum',    price:1590,   change:-0.8 },
+  { sym:'SPY', name:'S&P 500 ETF', price:538.40, change:0.6  },
+  { sym:'OIL', name:'Crude oil',   price:82.40,  change:-1.1 },
+  { sym:'SOL', name:'Solana',      price:131.50, change:-1.2 },
+  { sym:'GLD', name:'Gold ETF',    price:234.80, change:0.3  },
+]
+
+var PORTFOLIO = [
+  { sym:'BTC', name:'Bitcoin',    value:6200, change:2.4  },
+  { sym:'SPY', name:'S&P 500',    value:3100, change:0.6  },
+  { sym:'ETH', name:'Ethereum',   value:1800, change:-0.8 },
+  { sym:'QQQ', name:'Nasdaq-100', value:1100, change:0.9  },
+  { sym:'SOL', name:'Solana',     value:780,  change:-1.2 },
+  { sym:'GLD', name:'Gold ETF',   value:500,  change:0.3  },
+]
+
+var VESSELS = [
+  { name:'VLCC Poseidon',   type:'oil',       status:'delayed', cargo:'Crude oil', from:'Kuwait',       to:'Rotterdam'   },
+  { name:'VLCC Atlas',      type:'oil',       status:'delayed', cargo:'Crude oil', from:'Saudi Arabia', to:'China'       },
+  { name:'LNG Arctic Star', type:'lng',       status:'transit', cargo:'LNG',       from:'Qatar',        to:'Japan'       },
+  { name:'VLCC Titan',      type:'oil',       status:'delayed', cargo:'Crude oil', from:'Iraq',         to:'South Korea' },
+  { name:'CMA CGM Jade',    type:'container', status:'transit', cargo:'General',   from:'Shanghai',     to:'Hamburg'     },
+  { name:'Maersk Nordic',   type:'container', status:'transit', cargo:'General',   from:'Singapore',    to:'Rotterdam'   },
+]
+
+var SHIP_ALERTS = [
+  { level:'high',   title:'Strait of Hormuz — 3 VLCC tankers delayed', detail:'Poseidon, Atlas and Titan delayed 12-24hrs. Around 60M barrels affected. Watch crude oil and USO ETF for upward pressure.', assets:['OIL','USO','XLE'] },
+  { level:'medium', title:'Red Sea — Houthi activity elevated',         detail:'Container ships rerouting via Cape of Good Hope. Adds 10-14 days to Europe routes. Watch shipping and energy stocks.',        assets:['ZIM','GLD'] },
+]
+
+var TYPE_COLOR   = { oil:'red', lng:'amber', container:'green' }
+var STATUS_COLOR = { delayed:'red', transit:'green', anchored:'amber' }
+var TICKER_STATIC = [
+  { sym:'SPY', price:538.40, change:0.6  },
+  { sym:'QQQ', price:441.20, change:0.9  },
+  { sym:'VOO', price:495.10, change:0.5  },
+  { sym:'GLD', price:234.80, change:0.3  },
+  { sym:'USO', price:72.10,  change:-1.1 },
+  { sym:'OIL', price:82.40,  change:-1.1 },
+]
+
+var currentPanel = 'markets'
+var tradeMode = 'buy'
+var currentNewsCategory = 'general'
+var cryptoPrices = []
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active') })
+  document.querySelectorAll('.navbtn').forEach(function(b) { b.classList.remove('active') })
+  document.getElementById('panel-' + id).classList.add('active')
+  btn.classList.add('active')
+  currentPanel = id
+}
+
+function setTradeMode(mode) {
+  tradeMode = mode
+  var buyTab = document.getElementById('buyTab')
+  var sellTab = document.getElementById('sellTab')
+  var btn = document.getElementById('tradeBtn')
+  if (mode === 'buy') {
+    buyTab.className = 'tradetab buy'
+    sellTab.className = 'tradetab'
+    btn.style.background = '#00d48a'
+  } else {
+    buyTab.className = 'tradetab'
+    sellTab.className = 'tradetab sell'
+    btn.style.background = '#ff4d6a'
+  }
+}
+
+function placeTrade() {
+  var btn = document.getElementById('tradeBtn')
+  btn.textContent = 'Order placed!'
+  setTimeout(function() { btn.textContent = 'Review order' }, 2500)
+}
+
+function handleSearch(val) {
+  if (!val) return
+  val = val.toLowerCase()
+  var all = ETFS.concat(WATCHLIST).concat(cryptoPrices.map(function(c) { return { sym: c.sym, name: c.name } }))
+  var matches = all.filter(function(a) { return a.sym.toLowerCase().includes(val) || (a.name && a.name.toLowerCase().includes(val)) })
+  if (matches.length > 0) {
+    document.getElementById('tradeAsset').value = matches[0].sym
+  }
+}
+
+function renderTicker(cryptos) {
+  var all = TICKER_STATIC.concat(cryptos.map(function(c) { return { sym: c.sym, price: c.price, change: c.change24h } }))
+  var doubled = all.concat(all)
+  var html = ''
+  for (var i = 0; i < doubled.length; i++) {
+    var t = doubled[i]
+    var cl = t.change >= 0 ? 'up' : 'dn'
+    var sign = t.change >= 0 ? '+' : ''
+    html += '<span class="tickitem"><span class="ticksym">' + t.sym + '</span><span>$' + t.price.toFixed(2) + '</span><span class="' + cl + '">' + sign + t.change.toFixed(2) + '%</span></span>'
+  }
+  document.getElementById('tickerContent').innerHTML = html
+}
+
+function renderWatchlist() {
+  var html = ''
+  for (var i = 0; i < WATCHLIST.length; i++) {
+    var w = WATCHLIST[i]
+    var cl = w.change >= 0 ? 'up' : 'dn'
+    var sign = w.change >= 0 ? '+' : ''
+    html += '<div class="watchrow"><div><div class="watchsym mono">' + w.sym + '</div><div class="watchname">' + w.name + '</div></div><div class="watchright"><div class="watchprice mono">$' + w.price.toFixed(2) + '</div><div class="' + cl + '">' + sign + w.change + '%</div></div></div>'
+  }
+  document.getElementById('watchlist').innerHTML = html
+}
+
+function renderETFs() {
+  var html = ''
+  for (var i = 0; i < ETFS.length; i++) {
+    var e = ETFS[i]
+    var cl = e.change >= 0 ? 'up' : 'dn'
+    var sign = e.change >= 0 ? '+' : ''
+    html += '<div class="etfcard"><div class="etftop"><div><div class="etfsym mono">' + e.sym + '</div><div class="etfname">' + e.name + '</div></div><span class="etfcat">' + e.cat + '</span></div><div class="etfprice mono">$' + e.price.toFixed(2) + '</div><div class="' + cl + '">' + sign + e.change + '% today</div><div class="etfexp">Expense ratio: ' + e.exp + '</div></div>'
+  }
+  document.getElementById('etfgrid').innerHTML = html
+}
+
+function renderPortfolio() {
+  var html = ''
+  for (var i = 0; i < PORTFOLIO.length; i++) {
+    var p = PORTFOLIO[i]
+    var cl = p.change >= 0 ? 'up' : 'dn'
+    var sign = p.change >= 0 ? '+' : ''
+    html += '<div class="portrow"><div><div class="portsym mono">' + p.sym + '</div><div class="portname">' + p.name + '</div></div><div class="portvalue mono">$' + p.value.toLocaleString() + '</div><div class="' + cl + '">' + sign + p.change + '%</div></div>'
+  }
+  document.getElementById('portrows').innerHTML = html
+}
+
+function renderShipTracker() {
+  var html = ''
+  for (var i = 0; i < SHIP_ALERTS.length; i++) {
+    var a = SHIP_ALERTS[i]
+    var assets = ''
+    for (var j = 0; j < a.assets.length; j++) {
+      assets += '<span class="shipassettag">' + a.assets[j] + '</span>'
+    }
+    html += '<div class="shipalert ' + a.level + '"><div class="shipalerttitle">' + a.title + '</div><div class="shipalertdetail">' + a.detail + '</div><div class="shipalertassets"><span class="shipassetlabel">Watch: </span>' + assets + '</div></div>'
+  }
+  var alertsHtml = '<div class="shipsection"><div class="shipsectiontitle">Commodity vessel alerts</div>' + html + '</div>'
+
+  var vesselHtml = '<div class="shipsection"><div class="shipsectiontitle">Tracked vessels</div>'
+  vesselHtml += '<div class="shiplegend"><span class="shipdot dot-red"></span> Oil tanker <span class="shipdot dot-amber" style="margin-left:10px"></span> LNG <span class="shipdot dot-green" style="margin-left:10px"></span> Container</div>'
+  for (var k = 0; k < VESSELS.length; k++) {
+    var v = VESSELS[k]
+    var dotClass = 'dot-' + TYPE_COLOR[v.type]
+    var statusClass = 'status-' + STATUS_COLOR[v.status]
+    vesselHtml += '<div class="shipvessel"><div class="shipvesselleft"><span class="shipdot ' + dotClass + '"></span><div><div class="shipvesselname">' + v.name + '</div><div class="shipvesselroute">' + v.from + ' to ' + v.to + '</div></div></div><div class="shipvesselright"><span class="shipstatus ' + statusClass + '">' + v.status + '</span><div class="shipcargo">' + v.cargo + '</div></div></div>'
+  }
+  vesselHtml += '</div>'
+  document.getElementById('shipwrap').innerHTML = alertsHtml + vesselHtml + '<div class="shipfooter">Real ship tracking via MarineTraffic API coming soon</div>'
+}
+
+function loadNews(category, btn) {
+  currentNewsCategory = category
+  if (btn) {
+    document.querySelectorAll('.newstab').forEach(function(t) { t.classList.remove('active') })
+    btn.classList.add('active')
+  }
+  var feed = document.getElementById('newsfeed')
+  feed.innerHTML = '<div class="loading"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>'
+
+  var FALLBACK = [
+    { title:'Markets open higher as investors eye Fed minutes', timeAgo:'12m ago', source:'Yahoo Finance', link:'https://finance.yahoo.com' },
+    { title:'Bitcoin holds above $80K amid institutional buying', timeAgo:'34m ago', source:'Yahoo Finance', link:'https://finance.yahoo.com' },
+    { title:'Oil prices dip on demand concerns from Asia', timeAgo:'1h ago', source:'Yahoo Finance', link:'https://finance.yahoo.com' },
+    { title:'Gold near record highs as dollar weakens', timeAgo:'2h ago', source:'Yahoo Finance', link:'https://finance.yahoo.com' },
+    { title:'Fed signals two rate cuts possible in 2026', timeAgo:'3h ago', source:'Yahoo Finance', link:'https://finance.yahoo.com' },
+  ]
+
+  var tagClass = 'newstag tag-' + category
+  function renderNews(items) {
+    var html = ''
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i]
+      html += '<a class="newsitem" href="' + (item.link || 'https://finance.yahoo.com') + '" target="_blank" rel="noopener noreferrer"><div class="newsitemtop"><span class="' + tagClass + '">' + category + '</span><span class="newstime">' + (item.timeAgo || '') + '</span></div><div class="newstitle">' + item.title + '</div><div class="newssource">' + (item.source || 'Yahoo Finance') + '</div></a>'
+    }
+    feed.innerHTML = html
+  }
+
+  fetch('/api/news?category=' + category)
+    .then(function(r) { return r.json() })
+    .then(function(data) { renderNews(data.items && data.items.length > 0 ? data.items : FALLBACK) })
+    .catch(function() { renderNews(FALLBACK) })
+}
+
+function loadCrypto() {
+  fetch('/api/prices')
+    .then(function(r) { return r.json() })
+    .then(function(data) {
+      if (!data.prices) return
+      cryptoPrices = data.prices
+      renderTicker(data.prices)
+      var html = ''
+      for (var i = 0; i < data.prices.length; i++) {
+        var c = data.prices[i]
+        var cl = c.change24h >= 0 ? 'up' : 'dn'
+        var sign = c.change24h >= 0 ? '+' : ''
+        var mcap = c.marketCap >= 1e9 ? '$' + (c.marketCap/1e9).toFixed(1) + 'B' : '$' + (c.marketCap/1e6).toFixed(0) + 'M'
+        html += '<div class="cryptorow"><div><div class="cryptosym">' + c.sym + '</div><div class="cryptoname">' + c.name + '</div></div><div><div class="cryptoprice">$' + c.price.toFixed(2) + '</div><div class="cryptochange ' + cl + '">' + sign + c.change24h.toFixed(2) + '%</div><div class="cryptomcap">' + mcap + '</div></div></div>'
+      }
+      document.getElementById('cryptolist').innerHTML = html
+      document.getElementById('cryptoUpdated').textContent = 'Updated ' + new Date(data.updatedAt).toLocaleTimeString()
+    })
+    .catch(function() {
+      renderTicker([])
+    })
+}
+
+renderWatchlist()
+renderETFs()
+renderPortfolio()
+renderShipTracker()
+renderTicker([])
+loadNews('general', null)
+loadCrypto()
+setInterval(loadCrypto, 30000)
+setInterval(function() { loadNews(currentNewsCategory, null) }, 120000)
+</script>
+</body>
+</html>
