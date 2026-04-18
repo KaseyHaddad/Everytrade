@@ -1,0 +1,73 @@
+.terminal { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: var(--bg); }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 48px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; flex-wrap: wrap; }
+.logo { font-size: 16px; font-weight: 500; font-family: var(--font-mono); color: var(--text); letter-spacing: -0.5px; flex-shrink: 0; margin-right: 6px; }
+.logoAccent { color: var(--blue); }
+.search { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); font-size: 12px; width: 200px; outline: none; }
+.search:focus { border-color: var(--blue); }
+.search::placeholder { color: var(--text3); }
+.nav { display: flex; gap: 2px; flex: 1; flex-wrap: wrap; }
+.navBtn { padding: 5px 11px; border-radius: 4px; border: 1px solid transparent; background: transparent; font-size: 12px; color: var(--text2); white-space: nowrap; cursor: pointer; }
+.navBtn:hover { color: var(--text); background: var(--bg3); }
+.navActive { color: var(--blue); border-color: var(--border2); background: var(--blue-dim); }
+.topRight { margin-left: auto; flex-shrink: 0; }
+.portSummary { display: flex; flex-direction: column; align-items: flex-end; }
+.portVal { font-size: 14px; font-weight: 500; font-family: var(--font-mono); color: var(--text); }
+.body { display: grid; grid-template-columns: 1fr 260px; flex: 1; overflow: hidden; }
+.left { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); }
+.panelWrap { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.panelHeader { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.panelTitle { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); font-family: var(--font-mono); }
+.disclaimer { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+.etfGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; padding: 14px; overflow-y: auto; }
+.etfCard { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; cursor: pointer; }
+.etfCard:hover { border-color: var(--border2); }
+.etfTop { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.etfSym  { font-size: 14px; font-weight: 500; color: var(--text); font-family: var(--font-mono); }
+.etfName { font-size: 11px; color: var(--text3); }
+.etfCat  { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); font-family: var(--font-mono); white-space: nowrap; }
+.etfPrice { font-size: 18px; font-weight: 500; color: var(--text); font-family: var(--font-mono); margin-bottom: 2px; }
+.etfExp  { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.portGrid { display: flex; flex-direction: column; overflow-y: auto; flex: 1; }
+.portMetrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+.metric { background: var(--bg2); padding: 14px; }
+.metricLabel { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--font-mono); margin-bottom: 4px; }
+.metricVal { font-size: 20px; font-weight: 500; color: var(--text); font-family: var(--font-mono); }
+.portTable { padding: 14px; }
+.portTableHeader { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); font-family: var(--font-mono); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.portRow { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.portRow:last-child { border: none; }
+.portSym   { font-size: 13px; font-weight: 500; font-family: var(--font-mono); color: var(--text); }
+.portName  { font-size: 11px; color: var(--text3); }
+.portValue { font-size: 13px; font-family: var(--font-mono); color: var(--text); }
+.right { display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
+.sideSection { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.sideTitle { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 8px; }
+.watchRow { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.watchRow:last-child { border: none; }
+.watchSym   { font-size: 12px; font-weight: 500; font-family: var(--font-mono); color: var(--text); }
+.watchName  { font-size: 11px; color: var(--text3); }
+.watchRight { text-align: right; }
+.watchPrice { font-size: 12px; font-family: var(--font-mono); color: var(--text); }
+.tradeTabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.tradeTab  { flex: 1; padding: 6px; border-radius: 4px; border: 1px solid var(--border2); background: transparent; font-size: 12px; color: var(--text2); cursor: pointer; }
+.tradeBuy  { background: var(--green-dim); color: var(--green); border-color: var(--green); }
+.tradeSell { background: var(--red-dim);   color: var(--red);   border-color: var(--red);   }
+.tradeLabel { display: block; font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tradeInput { width: 100%; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); font-size: 12px; font-family: var(--font-mono); margin-bottom: 8px; outline: none; }
+.tradeInput:focus { border-color: var(--blue); }
+.tradeBtn { width: 100%; padding: 8px; border-radius: 4px; border: none; background: var(--green); color: #000; font-size: 12px; font-weight: 500; font-family: var(--font-mono); cursor: pointer; margin-top: 2px; }
+.tradeBtn:hover { opacity: 0.85; }
+.tradeBtnSell { background: var(--red); }
+.tradeNote { font-size: 10px; color: var(--text3); text-align: center; margin-top: 6px; }
+.alertRow { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.alertRow:last-child { border: none; }
+.alertLabel { font-size: 11px; color: var(--text2); font-family: var(--font-mono); }
+.alertOn  { font-size: 11px; color: var(--green); }
+.alertOff { font-size: 11px; color: var(--text3); }
+.up { color: var(--green); }
+.dn { color: var(--red); }
+@media (max-width: 768px) {
+  .body { grid-template-columns: 1fr; }
+  .right { display: none; }
+  .portMetrics { grid-template-columns: repeat(2, 1fr); }
+}
